@@ -1,12 +1,10 @@
-// Main server file that integrates everything and starts the application.
-
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const newsRoutes = require('./routes/newsRoutes');
-const userRoutes = require('./routes/userRoutes'); // Import userRoutes
-const cookieParser = require('cookie-parser'); // Import cookie-parser
+const userRoutes = require('./routes/userRoutes');
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
 const app = express();
@@ -16,14 +14,26 @@ console.log('The FRONTEND_URL is:', process.env.FRONTEND_URL);
 // Connect to MongoDB
 connectDB();
 
+// CORS Configuration for Production
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cookieParser()); // Add cookie parser middleware
+app.use(cookieParser());
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ message: 'SAKEC News API is running!' });
+});
 
 // Routes
 app.use('/api/news', newsRoutes);
-app.use('/api/users', userRoutes); // Mount userRoutes
+app.use('/api/users', userRoutes);
 
 // Global error handling middleware
 app.use((err, req, res, next) => {
